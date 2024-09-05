@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import Agent from "./Agent";
 import Stats from "./Stats";
 import UserMicBubble from "./UserMicBubble";
+import Checklist from "./Checklist";
 
 let stats_aggregator: StatsAggregator;
 
@@ -41,10 +42,59 @@ export const Session = React.memo(
     const [updatingConfig, setUpdatingConfig] = useState<boolean>(false);
 
     const modalRef = useRef<HTMLDialogElement>(null);
+
+    const [userResponses, setUserResponses] = useState({
+      name: '',
+      isNameChecked: false,
+
+      prescriptions: '',
+      allergies: '',
+      medicalConditions: '',
+      reasonsForVisit: '',
+    });
+
     //const bingSoundRef = useRef<HTMLAudioElement>(null);
     //const bongSoundRef = useRef<HTMLAudioElement>(null);
 
     // ---- Voice Client Events
+
+    useVoiceClientEvent(
+      VoiceEvent.BotTranscript,
+      useCallback((transcript: any) => {
+        console.log("Agent said:", transcript); // Log the entire transcript object from agent
+      }, [])
+    );
+
+    useVoiceClientEvent(
+      VoiceEvent.UserTranscript,
+      useCallback((transcript: any) => {
+        if (transcript.final) { // Only process if the transcript is final
+          console.log("Final User Transcript:", transcript.text);
+
+          const lowerCasedTranscript = transcript.text.toLowerCase();
+
+          // Check if "name" is mentioned in the sentence
+          if (lowerCasedTranscript.includes("name")) {
+            // Split the sentence into words and take the last word as the name
+            const words = transcript.text.split(" ");
+            const lastWord = words[words.length - 1].replace(/[.,!?]/g, "").trim(); // Get the last word and remove punctuation
+
+            if (lastWord) {
+              setUserResponses((prevState) => ({
+                ...prevState,
+                name: lastWord,
+                isNameChecked: true, // Mark the name field as checked
+              }));
+              console.log("User's name is:", lastWord);
+            } else {
+              console.error("Name extraction failed: No valid name found.");
+            }
+          }
+
+          // Additional logic for handling other final user responses
+        }
+      }, [])
+    );
 
     useVoiceClientEvent(
       VoiceEvent.Metrics,
@@ -175,22 +225,30 @@ export const Session = React.memo(
             document.getElementById("tray")!
           )}
 
-        <div className="flex-1 flex flex-col items-center justify-center w-full">
-          <Card.Card
-            fullWidthMobile={false}
-            className="w-full max-w-[320px] sm:max-w-[420px] mt-auto shadow-long"
-          >
-            <Agent
-              isReady={state === "ready"}
-              statsAggregator={stats_aggregator}
+        <div className="flex items-center justify-center w-full h-screen gap-8">
+          <div className="flex-1 flex flex-col items-center justify-center max-w-[420px]">
+            <Card.Card
+              fullWidthMobile={false}
+              className="w-full mt-auto shadow-long"
+            >
+              <Agent
+                isReady={state === "ready"}
+                statsAggregator={stats_aggregator}
+              />
+            </Card.Card>
+            <UserMicBubble
+              active={hasStarted}
+              muted={muted}
+              handleMute={() => toggleMute()}
             />
-          </Card.Card>
-          <UserMicBubble
-            active={hasStarted}
-            muted={muted}
-            handleMute={() => toggleMute()}
-          />
+          </div>
+
+          <div className="flex-shrink-0 max-w-[320px]">
+            <Checklist userResponses={userResponses} />
+          </div>
         </div>
+
+
 
         <footer className="w-full flex flex-row mt-auto self-end md:w-auto">
           <div className="flex flex-row justify-between gap-3 w-full md:w-auto">

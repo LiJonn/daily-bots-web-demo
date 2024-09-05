@@ -1,0 +1,68 @@
+.container {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+  width: 300px;
+}
+
+.header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.checklistContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.checked, .unchecked {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.25rem;
+  margin-right: 12px;
+}
+
+.checked {
+  color: green;
+}
+
+.unchecked {
+  color: black;
+}
+
+.labelChecked {
+  font-weight: 600;
+  color: black;
+}
+
+.labelUnchecked {
+  font-weight: 400;
+  color: grey;
+}
+
+.description {
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 4px;
+  white-space: pre-wrap;
+  text-align: left;
+}
